@@ -1,3 +1,83 @@
+// 开放队列
+var openList = (function() {
+
+  var _openArr = [];
+
+  return {
+    // 添加到队列
+    add: function(point){
+      _openArr.push(point);
+    },
+
+    // 计算队列长度
+    count: function(){
+      return _openArr.length;
+    },
+
+    // 得到开放队列中f值最小的点
+    minPoint: function(){
+
+      _openArr.forEach(function(item, index){
+
+      
+      });
+
+    },
+    // 删除某个点
+    removeAt: function(index) {
+      _openArr.splice(index,1);
+    },
+    // look
+    lookArr: function() {
+      console.log(_openArr);
+    }
+
+  };
+
+
+})();
+
+// 闭合队列
+var closeList = (function() {
+
+
+
+})();
+
+// 路径
+var roadArr = []; 
+
+
+/**
+ * 寻找线路方法，A*寻路算法
+ * @param  
+ * @param  
+ * @return 坐标线路数组
+ */
+var findPath = function(start, end) {
+
+  openList.add(start);
+  openList.lookArr();
+  
+  // 循环
+  while(openList.count() !== 0)
+  {
+
+    // 找出F值最小的点
+    var tempStart = openList.minPoint();
+    openList.removeAt(0);
+    openList.lookArr();
+    // 找出它相邻的点
+
+
+    
+    // 
+    break;
+  }
+
+};
+/*****公共方法*****/
+
 function $(el){
   return document.querySelector(el);
 }
@@ -58,7 +138,7 @@ var endPoint = {
 var block = {
   width: 40, // 墙体宽
   height: 40 // 墙体高
-}
+};
   
 // 方格横坐标
 var cooX = [
@@ -78,7 +158,7 @@ var stageNum = 0;
 // 处理按键
 var keysDown = {};
 
-// 事件监听
+// 监听游戏画布上的点击事件
 eventUtil.addHandler($('canvas'), "click", function(e) {
 
   // 目标块坐标
@@ -89,10 +169,9 @@ eventUtil.addHandler($('canvas'), "click", function(e) {
 
   console.log(targetBlock);
 
-  findPath(new Point(kingsMan), new Point(targetBlock));
-
-
+  findPath([20,180], targetBlock);
 },false);
+
 
 eventUtil.addHandler(window, "keydown", function (e) {
   keysDown[e.keyCode] = true;
@@ -111,7 +190,7 @@ var calTargetBlock = function(x, y) {
   cooX.forEach(function(item, index){
     if (x > item[0] && x < item[1]) {
       targetX = index;
-      targetBlock['x'] = targetX;
+      targetBlock[0] = targetX;
     }
   });
 
@@ -119,10 +198,12 @@ var calTargetBlock = function(x, y) {
   cooY.forEach(function(item, index){
     if (y > item[0] && y < item[1]) {
       targetY = index;
-      targetBlock['y'] = targetY;
+      targetBlock[1] = targetY;
     }
   });
 
+  // 判断点击的是不是墙体
+  
   return targetBlock;
 };
 
@@ -133,7 +214,7 @@ var reset = function () {
   // 生成随机关卡，13行墙体，每行两个障碍物
   wallBlockArr = createBlock(13, 2);
 
-  console.log(wallBlockArr)
+  console.log(wallBlockArr);
 };
 
 /**
@@ -171,12 +252,8 @@ var update = function (modifier) {
   }
 
   // 英雄与怪物碰到了么？
-  if (
-    kingsMan.x <= (endPoint.x + 32)
-    && endPoint.x <= (kingsMan.x + 32)
-    && kingsMan.y <= (endPoint.y + 32)
-    && endPoint.y <= (kingsMan.y + 32)
-  ) {
+  if (kingsMan.x <= (endPoint.x + 32) && endPoint.x <= (kingsMan.x + 32) && kingsMan.y <= (endPoint.y + 32) && endPoint.y <= (kingsMan.y + 32)) 
+  {
     ++stageNum;
     reset();
   }
@@ -258,70 +335,3 @@ Point.prototype.calF = function() {
   
 };
 
-
-// 开放队列
-var openList = (function() {
-
-  var openArr = [];
-
-  return {
-    // 添加到队列
-    add: function(point){
-      openArr.push(point);
-    },
-
-    // 计算队列长度
-    count: function(){
-      return openArr.length;
-    },
-
-    // 得到开放队列中f值最小的点
-    minPoint: function(){
-
-      openArr.forEach(function(item, index){
-
-        
-        
-      });
-
-    }
-
-  };
-
-
-}());
-
-// 闭合队列
-var closeList = (function() {
-
-
-
-}());
-
-// 路径
-var roadArr = []; 
-
-
-/**
- * 寻找线路方法，A*寻路算法
- * @param  
- * @param  
- * @return 坐标线路数组
- */
-var findPath = function(start, end) {
-
-  openList.add(start);
-  
-  console.log("aa")
-
-  while(openList.count() !== 0)
-  {
-    //找出F值最小的点
-    var tempStart = openList.minPoint();
-
-
-
-
-  }
-
-};

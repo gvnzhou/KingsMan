@@ -1,3 +1,5 @@
+/*****公共方法*****/
+
 function $(el){
   return document.querySelector(el);
 }

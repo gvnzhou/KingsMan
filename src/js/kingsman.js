@@ -22,7 +22,7 @@ var endPoint = {
 var block = {
   width: 40, // 墙体宽
   height: 40 // 墙体高
-}
+};
   
 // 方格横坐标
 var cooX = [
@@ -42,7 +42,7 @@ var stageNum = 0;
 // 处理按键
 var keysDown = {};
 
-// 事件监听
+// 监听游戏画布上的点击事件
 eventUtil.addHandler($('canvas'), "click", function(e) {
 
   // 目标块坐标
@@ -53,10 +53,9 @@ eventUtil.addHandler($('canvas'), "click", function(e) {
 
   console.log(targetBlock);
 
-  findPath(new Point(kingsMan), new Point(targetBlock));
-
-
+  findPath([20,180], targetBlock);
 },false);
+
 
 eventUtil.addHandler(window, "keydown", function (e) {
   keysDown[e.keyCode] = true;
@@ -75,7 +74,7 @@ var calTargetBlock = function(x, y) {
   cooX.forEach(function(item, index){
     if (x > item[0] && x < item[1]) {
       targetX = index;
-      targetBlock['x'] = targetX;
+      targetBlock[0] = targetX;
     }
   });
 
@@ -83,10 +82,12 @@ var calTargetBlock = function(x, y) {
   cooY.forEach(function(item, index){
     if (y > item[0] && y < item[1]) {
       targetY = index;
-      targetBlock['y'] = targetY;
+      targetBlock[1] = targetY;
     }
   });
 
+  // 判断点击的是不是墙体
+  
   return targetBlock;
 };
 
@@ -97,7 +98,7 @@ var reset = function () {
   // 生成随机关卡，13行墙体，每行两个障碍物
   wallBlockArr = createBlock(13, 2);
 
-  console.log(wallBlockArr)
+  console.log(wallBlockArr);
 };
 
 /**
@@ -135,12 +136,8 @@ var update = function (modifier) {
   }
 
   // 英雄与怪物碰到了么？
-  if (
-    kingsMan.x <= (endPoint.x + 32)
-    && endPoint.x <= (kingsMan.x + 32)
-    && kingsMan.y <= (endPoint.y + 32)
-    && endPoint.y <= (kingsMan.y + 32)
-  ) {
+  if (kingsMan.x <= (endPoint.x + 32) && endPoint.x <= (kingsMan.x + 32) && kingsMan.y <= (endPoint.y + 32) && endPoint.y <= (kingsMan.y + 32)) 
+  {
     ++stageNum;
     reset();
   }
