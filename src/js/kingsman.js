@@ -9,7 +9,10 @@ document.body.appendChild(canvas);
 var kingsMan = {
   speed: 256, //每秒移动的像素
   x: 180,
-  y: 20
+  y: 20,
+  sx: 4,
+  sy: 0,
+  flag: 1 // 标识符开始点
 };
 
 // 终点对象
@@ -42,18 +45,18 @@ var stageNum = 0;
 // 处理按键
 var keysDown = {};
 
+// 目标块坐标
+var targetBlock;
+
 // 监听游戏画布上的点击事件
 eventUtil.addHandler($('canvas'), "click", function(e) {
-
-  // 目标块坐标
-  var targetBlock;
   
   // 计算所属方块
   targetBlock = calTargetBlock(e.offsetX,e.offsetY);
 
   console.log(targetBlock);
 
-  findPath([20,180], targetBlock);
+  findPath({x:kingsMan.sx, y:kingsMan.sy,flag:kingsMan.flag}, targetBlock);
 },false);
 
 
@@ -74,7 +77,7 @@ var calTargetBlock = function(x, y) {
   cooX.forEach(function(item, index){
     if (x > item[0] && x < item[1]) {
       targetX = index;
-      targetBlock[0] = targetX;
+      targetBlock['x'] = targetX;
     }
   });
 
@@ -82,7 +85,7 @@ var calTargetBlock = function(x, y) {
   cooY.forEach(function(item, index){
     if (y > item[0] && y < item[1]) {
       targetY = index;
-      targetBlock[1] = targetY;
+      targetBlock['y'] = targetY;
     }
   });
 
@@ -173,15 +176,20 @@ var render = function () {
 
   // 渲染墙体
   ctx.fillStyle = "#2E1E1E";
-  wallBlockArr.forEach(function(item, index){
+  renderBlock(wallBlockArr);
+
+
+};
+
+// 渲染墙体方法
+function renderBlock(arr) {
+  arr.forEach(function(item, index){
     var i = index + 1;
     item.forEach(function(item, index){
       ctx.fillRect(item*block.width, i*block.height, block.width, block.height);
     });
   });
-
-};
-
+}
 
 
 

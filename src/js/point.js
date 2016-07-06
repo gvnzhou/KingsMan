@@ -3,13 +3,22 @@
  * @param {[type]} x [description]
  * @param {[type]} y [description]
  */
-function Point(obj) {
-  this.X = obj.x;
-  this.Y = obj.y;
+function Point(point) {
+  this.X = point[0];
+  this.Y = point[1];
+  this.parents = 0;
 }
 
+// 计算F值
 Point.prototype.calF = function() {
-  var F,G,H;
+ 
+
+    // H = 点到终点距离，G = 父节点到自身的距离
+    var F,G,H;
+    H = Math.abs(targetBlock[0] - this.X) + Math.abs(targetBlock[1] - this.Y);
+    G = Math.abs(this.parents.X - this.X) + Math.abs(this.parents.Y - this.Y);
+    F = H + G;
+    return point;
+  
   
 };
-
