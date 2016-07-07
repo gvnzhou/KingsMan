@@ -17,8 +17,8 @@ var kingsMan = {
 
 // 终点对象
 var endPoint = {
-  x: 0,
-  y: 0
+  x: 3,
+  y: 13
 };
 
 // 墙体对象
@@ -54,9 +54,15 @@ eventUtil.addHandler($('canvas'), "click", function(e) {
   // 计算所属方块
   targetBlock = calTargetBlock(e.offsetX,e.offsetY);
 
-  console.log(targetBlock);
+  //console.log(targetBlock);
 
   findPath({x:kingsMan.sx, y:kingsMan.sy,flag:kingsMan.flag}, targetBlock);
+  
+  // 绘制移动路径
+  renderMovePath();
+  
+
+
 },false);
 
 
@@ -77,7 +83,7 @@ var calTargetBlock = function(x, y) {
   cooX.forEach(function(item, index){
     if (x > item[0] && x < item[1]) {
       targetX = index;
-      targetBlock['x'] = targetX;
+      targetBlock.x = targetX;
     }
   });
 
@@ -85,7 +91,7 @@ var calTargetBlock = function(x, y) {
   cooY.forEach(function(item, index){
     if (y > item[0] && y < item[1]) {
       targetY = index;
-      targetBlock['y'] = targetY;
+      targetBlock.y = targetY;
     }
   });
 
@@ -97,11 +103,13 @@ var calTargetBlock = function(x, y) {
 
 // 当特工抵达终点后开始新一轮游戏
 var reset = function () {
-
   // 生成随机关卡，13行墙体，每行两个障碍物
   wallBlockArr = createBlock(13, 2);
-
-  console.log(wallBlockArr);
+  // 初始化起点坐标
+  kingsMan.x = 180;
+  kingsMan.y = 20;
+  kingsMan.sx = 4;
+  kingsMan.sy = 0;
 };
 
 /**
@@ -138,8 +146,8 @@ var update = function (modifier) {
     kingsMan.x += kingsMan.speed * modifier;
   }
 
-  // 英雄与怪物碰到了么？
-  if (kingsMan.x <= (endPoint.x + 32) && endPoint.x <= (kingsMan.x + 32) && kingsMan.y <= (endPoint.y + 32) && endPoint.y <= (kingsMan.y + 32)) 
+  // 是否达到终点
+  if (kingsMan.sx == endPoint.x && kingsMan.sy == endPoint.y) 
   {
     ++stageNum;
     reset();
@@ -161,9 +169,9 @@ var render = function () {
 
   // 终点
   ctx.beginPath();
-  ctx.moveTo(140,560);
-  ctx.lineTo(160,520);
-  ctx.lineTo(120,520);
+  ctx.moveTo((endPoint.x + 1) * 40 - 20,(endPoint.y + 1) * 40);
+  ctx.lineTo((endPoint.x + 1) * 40,endPoint.y * 40);
+  ctx.lineTo(endPoint.x * 40,endPoint.y * 40);
   ctx.fillStyle="#F4AF29";
   ctx.fill();
 
@@ -178,7 +186,24 @@ var render = function () {
   ctx.fillStyle = "#2E1E1E";
   renderBlock(wallBlockArr);
 
+};
 
+// 渲染移动路径
+var renderMovePath = function() {
+  var i = 0;
+  timer = setInterval(function (argument) {
+    if (i < roadArr.length) {
+      kingsMan.x = roadArr[i].x * 40 + 20;
+      kingsMan.y = roadArr[i].y * 40 + 20;
+      kingsMan.sx = roadArr[i].x;
+      kingsMan.sy = roadArr[i].y;
+      render();
+    } else {
+      clearInterval(timer);
+      initFindPath();
+    }
+    ++i;
+  },150);
 };
 
 // 渲染墙体方法
