@@ -1,7 +1,5 @@
 // 是否抵达
 var isArrive;
-// 是否寻路过程中
-var isFinding
 // 路径
 var roadArr = []; 
 // 开启队列
@@ -92,18 +90,18 @@ var openList = (function() {
         }
       });
     },
+    // 输出开发队列
     look: function() {
       console.log(_openArr);
     },
+    // 队列初始化
     init: function() {
       _openArr.splice(0, _openArr.length);
     }
-
   };
-
-
 })();
 
+// 比较函数
 var compareF = function(a, b) {
   return a.F - b.F;
 };
@@ -136,9 +134,8 @@ var findPath = function(start, end) {
   openList.add(start);
 
   // 循环
-  while(openList.count() !== 0)
+  while(!isArrive)
   {
-
     // 找出F值最小的点
     var tempStart = openList.minPoint();
     openList.removeAt(0);
@@ -157,16 +154,13 @@ var findPath = function(start, end) {
       }
     });
     
+    // 是否抵达终点
     openList.get(end);
-
-    if (isArrive) {
-      break;
-    }   
   }
-
-  foundPathRoad(end)
+  foundPathRoad(end);
 };
 
+// 查找目标点的周围点
 var sAroundPoints = function(tempStart) {
   var x = tempStart.x;
   var y = tempStart.y;
@@ -191,6 +185,7 @@ var foundPathRoad = function(obj) {
   return roadArr;
 };
 
+// 初始化寻路过程
 var initFindPath = function () {
   // 清空原来路径
   roadArr.splice(0, roadArr.length);

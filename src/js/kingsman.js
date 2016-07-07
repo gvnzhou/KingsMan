@@ -4,29 +4,24 @@ var ctx = canvas.getContext("2d");
 canvas.width = 320;
 canvas.height = 560;
 document.body.appendChild(canvas);
-
 // 游戏对象
 var kingsMan = {
   speed: 256, //每秒移动的像素
   x: 180,
   y: 20,
   sx: 4,
-  sy: 0,
-  flag: 1 // 标识符开始点
+  sy: 0
 };
-
 // 终点对象
 var endPoint = {
   x: 3,
   y: 13
 };
-
 // 墙体对象
 var block = {
   width: 40, // 墙体宽
   height: 40 // 墙体高
 };
-  
 // 方格横坐标
 var cooX = [
 [0,40],[40,80],[80,120],[120,160],[160,200],[200,240],[240,280],[280,320]
@@ -35,55 +30,40 @@ var cooX = [
 var cooY = [
 [0,40],[40,80],[80,120],[120,160],[160,200],[200,240],[240,280],[280,320],[320,360],[360,400],[400,440],[440,480],[480,520],[520,560]
 ];
-
 // 墙体数组
 var wallBlockArr = [];
-
 // 关卡数
 var stageNum = 0;
-
-// 处理按键
-var keysDown = {};
-
 // 目标块坐标
 var targetBlock;
-
-var isClickWall = true;
+// 点击是否墙体
+var isClickWall;
+// 是否寻路过程中
+var isFinding = false;
 
 // 监听游戏画布上的点击事件
 eventUtil.addHandler($('canvas'), "click", function(e) {
-  
+
+  isClickWall = true;
+
   // 计算所属方块
   targetBlock = calTargetBlock(e.offsetX,e.offsetY);
 
-  //console.log(targetBlock);
-  if (isClickWall) {
+  if (isClickWall && !isFinding) {
+    isFinding = true;
     findPath({x:kingsMan.sx, y:kingsMan.sy,flag:kingsMan.flag}, targetBlock);
     // 绘制移动路径
     renderMovePath();
   } else {
-    alert("请点击非墙体区域！")
+    //alert("请点击非墙体区域！");
   }
-  
-  
-
 
 },false);
-
-
-eventUtil.addHandler(window, "keydown", function (e) {
-  keysDown[e.keyCode] = true;
-}, false);
-
-eventUtil.addHandler(window, "keyup", function (e) {
-  delete keysDown[e.keyCode];
-}, false);
 
 // 计算所属的块
 var calTargetBlock = function(x, y) {
   var targetBlock = {};
   var targetX, targetY;
-
   // 判断x属于哪一块
   cooX.forEach(function(item, index){
     if (x > item[0] && x < item[1]) {
@@ -91,7 +71,6 @@ var calTargetBlock = function(x, y) {
       targetBlock.x = targetX;
     }
   });
-
   // 判断y属于哪一块
   cooY.forEach(function(item, index){
     if (y > item[0] && y < item[1]) {
@@ -99,18 +78,14 @@ var calTargetBlock = function(x, y) {
       targetBlock.y = targetY;
     }
   });
-
   // 判断点击的是不是墙体
   wallBlockArr.forEach(function(item, index) {
     item.forEach(function(im,idx) {
       if(im == targetBlock.x && index+1 == targetBlock.y) {
         isClickWall = false;
-      } else {
-        isClickWall = true;
       }
     })
   });
-
 
   return targetBlock;
 };
@@ -148,19 +123,6 @@ var createBlock = function(row, col) {
 
 // 更新游戏对象的属性
 var update = function (modifier) {
-  if (38 in keysDown) { // 用户按的是↑
-    kingsMan.y -= kingsMan.speed * modifier;
-  }
-  if (40 in keysDown) { // 用户按的是↓
-    kingsMan.y += kingsMan.speed * modifier;
-  }
-  if (37 in keysDown) { // 用户按的是←
-    kingsMan.x -= kingsMan.speed * modifier;
-  }
-  if (39 in keysDown) { // 用户按的是→
-    kingsMan.x += kingsMan.speed * modifier;
-  }
-
   // 是否达到终点
   if (kingsMan.sx == endPoint.x && kingsMan.sy == endPoint.y) 
   {
@@ -169,19 +131,16 @@ var update = function (modifier) {
   }
 };
 
-
 // 渲染所有物体
 var render = function () {
   // 背景
   ctx.fillStyle = "#FFE6CD";
   ctx.fillRect(0,0,320,560);
-
   // 特工
   ctx.beginPath();
   ctx.arc(kingsMan.x,kingsMan.y,20,0,Math.PI*2);
   ctx.fillStyle="#44B811";
   ctx.fill();
-
   // 终点
   ctx.beginPath();
   ctx.moveTo((endPoint.x + 1) * 40 - 20,(endPoint.y + 1) * 40);
@@ -189,18 +148,15 @@ var render = function () {
   ctx.lineTo(endPoint.x * 40,endPoint.y * 40);
   ctx.fillStyle="#F4AF29";
   ctx.fill();
-
   // 计分
   ctx.fillStyle = "rgb(0, 0, 0)";
   ctx.font = "20px Helvetica";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.fillText("Stage: " + stageNum, 10, 10);
-
   // 渲染墙体
   ctx.fillStyle = "#2E1E1E";
   renderBlock(wallBlockArr);
-
 };
 
 // 渲染移动路径
@@ -215,6 +171,7 @@ var renderMovePath = function() {
       render();
     } else {
       clearInterval(timer);
+      isFinding = false;
       initFindPath();
     }
     ++i;
