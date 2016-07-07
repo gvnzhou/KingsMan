@@ -295,6 +295,8 @@ var keysDown = {};
 // 目标块坐标
 var targetBlock;
 
+var isClickWall = true;
+
 // 监听游戏画布上的点击事件
 eventUtil.addHandler($('canvas'), "click", function(e) {
   
@@ -302,11 +304,14 @@ eventUtil.addHandler($('canvas'), "click", function(e) {
   targetBlock = calTargetBlock(e.offsetX,e.offsetY);
 
   //console.log(targetBlock);
-
-  findPath({x:kingsMan.sx, y:kingsMan.sy,flag:kingsMan.flag}, targetBlock);
+  if (isClickWall) {
+    findPath({x:kingsMan.sx, y:kingsMan.sy,flag:kingsMan.flag}, targetBlock);
+    // 绘制移动路径
+    renderMovePath();
+  } else {
+    alert("请点击非墙体区域！")
+  }
   
-  // 绘制移动路径
-  renderMovePath();
   
 
 
@@ -343,7 +348,17 @@ var calTargetBlock = function(x, y) {
   });
 
   // 判断点击的是不是墙体
-  
+  wallBlockArr.forEach(function(item, index) {
+    item.forEach(function(im,idx) {
+      if(im == targetBlock.x && index+1 == targetBlock.y) {
+        isClickWall = false;
+      } else {
+        isClickWall = true；
+      }
+    })
+  });
+
+
   return targetBlock;
 };
 

@@ -1,26 +1,22 @@
 // 是否抵达
 var isArrive;
-
+// 是否寻路过程中
+var isFinding
 // 路径
 var roadArr = []; 
-
 // 开启队列
 var openList = (function() {
-
   // 开启队列
   var _openArr = [];
-
   return {
     // 添加到队列
     add: function(point){
       _openArr.push(point);
     },
-
     // 计算队列长度
     count: function(){
       return _openArr.length;
     },
-
     // 得到开放队列中f值最小的点
     minPoint: function(){
       if (this.count() !== 1) {
@@ -71,7 +67,6 @@ var openList = (function() {
           isInCloseList = false;
         }
       });
-
       if (isInCloseList && isWall) {
         var G,H,F;
         H = (Math.abs(end.x - point.x) + Math.abs(end.y - point.y)) * 10;
@@ -87,7 +82,6 @@ var openList = (function() {
         point.parents = tempStart;
         _openArr.push(point);
       }
-      
     },
     // 是否到达目标点
     get: function(end) {
@@ -98,11 +92,9 @@ var openList = (function() {
         }
       });
     },
-
     look: function() {
       console.log(_openArr);
     },
-
     init: function() {
       _openArr.splice(0, _openArr.length);
     }

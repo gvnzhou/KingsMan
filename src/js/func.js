@@ -1,12 +1,10 @@
 /*****公共方法*****/
-
 function $(el){
   return document.querySelector(el);
 }
 function $$(el){
   return document.querySelectorAll(el);
 }
-
 // 跨浏览器事件处理程序
 var eventUtil = {
   // 添加句柄
