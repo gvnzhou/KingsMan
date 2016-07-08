@@ -4,6 +4,11 @@ var ctx = canvas.getContext("2d");
 canvas.width = 320;
 canvas.height = 560;
 document.body.appendChild(canvas);
+// 场景边界值
+var stage = {
+  x: 7,
+  y: 13
+}
 // 游戏对象
 var kingsMan = {
   speed: 256, //每秒移动的像素
@@ -38,18 +43,21 @@ var stageNum = 0;
 var targetBlock;
 // 点击是否墙体
 var isClickWall;
+// 是否点击自身
+var isClickSelf;
 // 是否寻路过程中
 var isFinding = false;
 
 // 监听游戏画布上的点击事件
 eventUtil.addHandler($('canvas'), "click", function(e) {
 
-  isClickWall = true;
+  isClickWall = false;
+  isClickSelf = false;
 
   // 计算所属方块
   targetBlock = calTargetBlock(e.offsetX,e.offsetY);
 
-  if (isClickWall && !isFinding) {
+  if (!isClickWall && !isFinding && !isClickSelf) {
     isFinding = true;
     findPath({x:kingsMan.sx, y:kingsMan.sy,flag:kingsMan.flag}, targetBlock);
     // 绘制移动路径
@@ -82,10 +90,15 @@ var calTargetBlock = function(x, y) {
   wallBlockArr.forEach(function(item, index) {
     item.forEach(function(im,idx) {
       if(im == targetBlock.x && index+1 == targetBlock.y) {
-        isClickWall = false;
+        isClickWall = true;
       }
     })
   });
+
+  // 判断是否点击自身
+  if (kingsMan.sx == targetBlock.x && kingsMan.sy == targetBlock.y) {
+    isClickSelf = true;
+  }
 
   return targetBlock;
 };

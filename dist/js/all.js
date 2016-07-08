@@ -32,18 +32,25 @@ var openList = (function() {
     exists: function(obj) {
       // 是否在开启队列中
       for(i = 0; i < _openArr.length; i++) {
-        if(_openArr[i].x == obj.x && _openArr[i].y == obj.y) {
+        if(_openArr[i].x === obj.x && _openArr[i].y === obj.y) {
           return true;
         }
       }
     },
-    // 找到节点
+    // 点已经在开启队列中
     foundPoint: function(tempStart, end, point) {
-      // if(point.G < tempStart.G + tempStart.parents.G) {
-
-      // } else {
-
-      // }
+      var G;
+      if(tempStart.x === point.x || tempStart.y === point.y) {
+        G = 10;
+      } else {
+        G = 14;
+      }
+      // 如果新路径G值更低，那么设置它的父方格为当前点
+      if(point.G > tempStart.G + G) {
+        point.parents = tempStart;
+        point.G = tempStart.G + G;
+        point.F = point.G + point.H;
+      }
     },
     // 点不在开启队列中,计算G、H、F值
     notFoundPoint: function(tempStart, end, point) {
@@ -51,12 +58,39 @@ var openList = (function() {
       var isWall = true;
       // 是否在关闭队列中
       var isInCloseList = true;
+      // 是否可以斜穿墙
+      var isTBLF = true;
+      // 是否处于边界外
+      var isOut = true;
+
       // 是否是障碍物
       wallBlockArr.forEach(function(item, index) {
         item.forEach(function(im,idx) {
-          if(im == point.x && index+1 == point.y) {
+          if(im === point.x && index+1 === point.y) {
             isWall = false;
-          }
+          } 
+          // 是否可以斜穿墙
+          else if ((point.x + 1) === im && point.y === (index + 1)) {
+            wallBlockArr.forEach(function(item2, index2) {
+              item2.forEach(function(im2,idx2) {
+                if ((point.x === im2 && (point.y + 1) === (index2 + 1)) || 
+                    (point.x === im2 && (point.y - 1) === (index2 + 1))) 
+                {
+                  isTBLF = false;
+                }
+              });
+            });
+          } else if ((point.x - 1) === im && point.y === (index + 1)) {
+            wallBlockArr.forEach(function(item2, index2) {
+              item2.forEach(function(im2,idx2) {
+                if ((point.x === im2 && (point.y + 1) === (index2 + 1)) || 
+                    (point.x === im2 && (point.y - 1) === (index2 + 1))) 
+                {
+                  isTBLF = false;
+                }
+              });
+            });
+          }      
         })
       });
       // 是否在关闭队列中
@@ -65,7 +99,12 @@ var openList = (function() {
           isInCloseList = false;
         }
       });
-      if (isInCloseList && isWall) {
+      // 判断点是否在边界外
+      if(point.x < -1 || point.x > stage.x || point.y < -1 || point.y > stage.y) {
+        isOut = false;
+      }
+      // 考虑该点是否可行
+      if (isInCloseList && isWall && isTBLF && isOut) {
         var G,H,F;
         H = (Math.abs(end.x - point.x) + Math.abs(end.y - point.y)) * 10;
         if(tempStart.x === point.x || tempStart.y === point.y) {
@@ -145,6 +184,7 @@ var findPath = function(start, end) {
     var aroundPoints = sAroundPoints(tempStart);
 
     aroundPoints.forEach(function(item, index) {
+      // 是否已经在开启队列中
       if (openList.exists(item)) {
         //计算G值, 如果比原来的大, 就什么都不做, 否则设置它的父节点为当前点,并更新G和F
         openList.foundPoint(tempStart, end, item);
@@ -156,6 +196,7 @@ var findPath = function(start, end) {
     
     // 是否抵达终点
     openList.get(end);
+
   }
   foundPathRoad(end);
 };
@@ -230,12 +271,18 @@ var eventUtil = {
 };
 
 
+
 // 创建游戏场景
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
 canvas.width = 320;
 canvas.height = 560;
 document.body.appendChild(canvas);
+// 场景边界值
+var stage = {
+  x: 7,
+  y: 13
+}
 // 游戏对象
 var kingsMan = {
   speed: 256, //每秒移动的像素
@@ -270,18 +317,21 @@ var stageNum = 0;
 var targetBlock;
 // 点击是否墙体
 var isClickWall;
+// 是否点击自身
+var isClickSelf;
 // 是否寻路过程中
 var isFinding = false;
 
 // 监听游戏画布上的点击事件
 eventUtil.addHandler($('canvas'), "click", function(e) {
 
-  isClickWall = true;
+  isClickWall = false;
+  isClickSelf = false;
 
   // 计算所属方块
   targetBlock = calTargetBlock(e.offsetX,e.offsetY);
 
-  if (isClickWall && !isFinding) {
+  if (!isClickWall && !isFinding && !isClickSelf) {
     isFinding = true;
     findPath({x:kingsMan.sx, y:kingsMan.sy,flag:kingsMan.flag}, targetBlock);
     // 绘制移动路径
@@ -314,10 +364,15 @@ var calTargetBlock = function(x, y) {
   wallBlockArr.forEach(function(item, index) {
     item.forEach(function(im,idx) {
       if(im == targetBlock.x && index+1 == targetBlock.y) {
-        isClickWall = false;
+        isClickWall = true;
       }
     })
   });
+
+  // 判断是否点击自身
+  if (kingsMan.sx == targetBlock.x && kingsMan.sy == targetBlock.y) {
+    isClickSelf = true;
+  }
 
   return targetBlock;
 };
