@@ -1,26 +1,20 @@
 // 是否抵达
 var isArrive;
-
 // 路径
 var roadArr = []; 
-
 // 开启队列
 var openList = (function() {
-
   // 开启队列
   var _openArr = [];
-
   return {
     // 添加到队列
     add: function(point){
       _openArr.push(point);
     },
-
     // 计算队列长度
     count: function(){
       return _openArr.length;
     },
-
     // 得到开放队列中f值最小的点
     minPoint: function(){
       if (this.count() !== 1) {
@@ -38,18 +32,25 @@ var openList = (function() {
     exists: function(obj) {
       // 是否在开启队列中
       for(i = 0; i < _openArr.length; i++) {
-        if(_openArr[i].x == obj.x && _openArr[i].y == obj.y) {
+        if(_openArr[i].x === obj.x && _openArr[i].y === obj.y) {
           return true;
         }
       }
     },
-    // 找到节点
+    // 点已经在开启队列中
     foundPoint: function(tempStart, end, point) {
-      // if(point.G < tempStart.G + tempStart.parents.G) {
-
-      // } else {
-
-      // }
+      var G;
+      if(tempStart.x === point.x || tempStart.y === point.y) {
+        G = 10;
+      } else {
+        G = 14;
+      }
+      // 如果新路径G值更低，那么设置它的父方格为当前点
+      if(point.G > tempStart.G + G) {
+        point.parents = tempStart;
+        point.G = tempStart.G + G;
+        point.F = point.G + point.H;
+      }
     },
     // 点不在开启队列中,计算G、H、F值
     notFoundPoint: function(tempStart, end, point) {
@@ -57,12 +58,39 @@ var openList = (function() {
       var isWall = true;
       // 是否在关闭队列中
       var isInCloseList = true;
+      // 是否可以斜穿墙
+      var isTBLF = true;
+      // 是否处于边界外
+      var isOut = true;
+
       // 是否是障碍物
       wallBlockArr.forEach(function(item, index) {
         item.forEach(function(im,idx) {
-          if(im == point.x && index+1 == point.y) {
+          if(im === point.x && index+1 === point.y) {
             isWall = false;
-          }
+          } 
+          // 是否可以斜穿墙
+          else if ((point.x + 1) === im && point.y === (index + 1)) {
+            wallBlockArr.forEach(function(item2, index2) {
+              item2.forEach(function(im2,idx2) {
+                if ((point.x === im2 && (point.y + 1) === (index2 + 1)) || 
+                    (point.x === im2 && (point.y - 1) === (index2 + 1))) 
+                {
+                  isTBLF = false;
+                }
+              });
+            });
+          } else if ((point.x - 1) === im && point.y === (index + 1)) {
+            wallBlockArr.forEach(function(item2, index2) {
+              item2.forEach(function(im2,idx2) {
+                if ((point.x === im2 && (point.y + 1) === (index2 + 1)) || 
+                    (point.x === im2 && (point.y - 1) === (index2 + 1))) 
+                {
+                  isTBLF = false;
+                }
+              });
+            });
+          }      
         })
       });
       // 是否在关闭队列中
@@ -71,8 +99,12 @@ var openList = (function() {
           isInCloseList = false;
         }
       });
-
-      if (isInCloseList && isWall) {
+      // 判断点是否在边界外
+      if(point.x < -1 || point.x > stage.x || point.y < -1 || point.y > stage.y) {
+        isOut = false;
+      }
+      // 考虑该点是否可行
+      if (isInCloseList && isWall && isTBLF && isOut) {
         var G,H,F;
         H = (Math.abs(end.x - point.x) + Math.abs(end.y - point.y)) * 10;
         if(tempStart.x === point.x || tempStart.y === point.y) {
@@ -87,7 +119,6 @@ var openList = (function() {
         point.parents = tempStart;
         _openArr.push(point);
       }
-      
     },
     // 是否到达目标点
     get: function(end) {
@@ -98,20 +129,18 @@ var openList = (function() {
         }
       });
     },
-
+    // 输出开发队列
     look: function() {
       console.log(_openArr);
     },
-
+    // 队列初始化
     init: function() {
       _openArr.splice(0, _openArr.length);
     }
-
   };
-
-
 })();
 
+// 比较函数
 var compareF = function(a, b) {
   return a.F - b.F;
 };
@@ -144,9 +173,8 @@ var findPath = function(start, end) {
   openList.add(start);
 
   // 循环
-  while(openList.count() !== 0)
+  while(!isArrive)
   {
-
     // 找出F值最小的点
     var tempStart = openList.minPoint();
     openList.removeAt(0);
@@ -156,6 +184,7 @@ var findPath = function(start, end) {
     var aroundPoints = sAroundPoints(tempStart);
 
     aroundPoints.forEach(function(item, index) {
+      // 是否已经在开启队列中
       if (openList.exists(item)) {
         //计算G值, 如果比原来的大, 就什么都不做, 否则设置它的父节点为当前点,并更新G和F
         openList.foundPoint(tempStart, end, item);
@@ -165,16 +194,14 @@ var findPath = function(start, end) {
       }
     });
     
+    // 是否抵达终点
     openList.get(end);
 
-    if (isArrive) {
-      break;
-    }   
   }
-
-  foundPathRoad(end)
+  foundPathRoad(end);
 };
 
+// 查找目标点的周围点
 var sAroundPoints = function(tempStart) {
   var x = tempStart.x;
   var y = tempStart.y;
@@ -199,6 +226,7 @@ var foundPathRoad = function(obj) {
   return roadArr;
 };
 
+// 初始化寻路过程
 var initFindPath = function () {
   // 清空原来路径
   roadArr.splice(0, roadArr.length);
